@@ -5,8 +5,6 @@ client.on('ready', () => {
     console.log('I am ready!');
 });
 
-const discord = new require("discord.js");
-const client = new discord.Client();
 var config = {
   events: [
     {type: "CHANNEL_CREATE", logType: "CHANNEL_CREATE", limit: 4 , delay: 5000},
