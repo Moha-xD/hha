@@ -1,102 +1,93 @@
-const Discord  = require('discord.js');
-const hero     = new Discord.Client();
-const prefix   = "#";
-const category = "530162023749779462";
-const devs     = ["475396751549792277", "403512493529497601"];
-let mtickets   = true;
-let tchannels  = [];
-let current    = 0;
-
-hero.login('NTI3OTY4Mzg0MTY0NDI5ODI0.Dw7B2A.kPwmsJGmbs5ItSeDcKSkjJ_XR58');
-
-hero.on('ready',async () => console.log(`   - " ${hero.user.username} " , Tickety is ready to work.`));
-hero.on('message',async message => {
-    const emojis   = { yes: `${hero.guilds.find(r => r.id === '530036295225835520').emojis.find(e => e.name === 'Yes')}`, wrong: `${hero.guilds.find(r => r.id === '530036295225835520').emojis.find(e => e.name === 'Wrong')}` };
-    if(message.author.bot || message.channel.type === 'dm') return;
-    let args = message.content.split(" ");
-    let author = message.author.id;
-    if(args[0].toLowerCase() === `${prefix}help`) {
-            let embed = new Discord.RichEmbed()
-            .setAuthor(message.author.username, message.author.avatarURL)
-            .setThumbnail(message.author.avatarURL)
-            .setColor("#36393e")
-            .addField(`❯ لعمل تكت, \`${prefix}new\``, `» Syntax: \`${prefix}new [Reason]\`\n» Description: **لعمل روم فقط يظهر لك ولأدارة السيرفر.**`)
-            .addField(`❯ قائمة الأوامر, \`${prefix}help\``, `» Syntax: \`${prefix}help\`\n» Description: **يظهر لك جميع اوامر البوت.**`)
-            .addField(`❯ لإيقاف الأعضاء من عمل تكتات, \`${prefix}mtickets\``, `» Syntax: \`${prefix}mtickets [Disable/Enable]\`\n» Description: **لجعل جميع اعضاء السيرفر غير قادرون على عمل تكت.**`)
-			.addField(`❯ لأقفال جميع التكتات المفتوحة, \`${prefix}deletetickets\``, `» Syntax: \`${prefix}deletetickets\`\n» Description: **لمسح جميع رومات التكتات المفتوحة في السيرفر**`)
-            .addField(`❯ لقفل التكت المفتوح, \`${prefix}close\``, `» Syntax: \`${prefix}close\`\n» Description: **لأقفال تكت.**\n\n للمزيد من المعلومات تواصل مع احد ادارة سيرفر رويال جيمز.`)
-            await message.channel.send(`${emojis.yes}, **هذه قائمة بجميع اوامر البووت.**`);
-            await message.channel.send(embed);
-    } else if(args[0].toLowerCase() === `${prefix}new`) {
-        if(mtickets === false) return message.channel.send(`${emojis.wrong}, **تم ايقاف هذه الخاصية من قبل احد ادارة السيرفر**`);
-        if(!message.guild.me.hasPermission("MANAGE_CHANNELS")) return message.channel.send(`${emojis.wrong}, **البوت لا يملك صلاحيات لصنع الروم**`);
-		console.log(current);
-		let openReason = "";
-		current++;
-    	message.guild.createChannel(`rgticket-${current}`, 'text').then(c => {
-		tchannels.push(c.id);
-		c.setParent(category);
-		message.channel.send(`${emojis.yes}, **تم عمل التكت.**`);
-		c.overwritePermissions(message.guild.id, {
-			READ_MESSAGES: false,
-			SEND_MESSAGES: false
-		});
-		c.overwritePermissions(message.author.id, {
-			READ_MESSAGES: true,
-			SEND_MESSAGES: true
-		});
-		
-		if(args[1]) openReason = `\nسبب فتح التكت , " **${args.slice(1).join(" ")}** "`;
-		let embed = new Discord.RichEmbed()
-		.setAuthor(message.author.username, message.author.avatarURL)
-		.setColor("#36393e")
-		.setDescription(`**انتظر قليلا الى حين رد الادارة عليك**${openReason}`);
-		c.send(`${message.author}`);
-		c.send(embed);
-	});
-    } else if(args[0].toLowerCase() === `${prefix}mtickets`) {
-        if(!message.member.hasPermission("MANAGE_GUILD")) return message.channel.send(`${emojis.wrong}, **أنت لست من ادارة السيرفر لتنفيذ هذا الأمر.**`);
-		if(args[1] && args[1].toLowerCase() === "enable") {
-			mtickets = true;
-			message.channel.send(`${emojis.yes}, **تم تفعيل التكتات , الاَن يمكن لأعضاء السيرفر استخدام امر انشاء التكت**`);
-		} else if(args[1] && args[1].toLowerCase() === "disable") {
-			mtickets = false;
-			message.channel.send(`${emojis.yes}, **تم اغلاق نظام التكتات , الاَن لا يمكن لأي عضو استخدام هذا الأمر**`);
-		} else if(!args[1]) {
-			if(mtickets === true) {
-			mtickets = false;
-			message.channel.send(`${emojis.yes}, **تم اغلاق نظام التكتات , الاَن لا يمكن لأي عضو استخدام هذا الأمر**`);
-			} else if(mtickets === false) {
-			mtickets = true;
-			message.channel.send(`${emojis.yes}, **تم تفعيل التكتات , الاَن يمكن لأعضاء السيرفر استخدام امر انشاء التكت**`);
-			}
-		}
-    } else if(args[0].toLowerCase() === `${prefix}close`) {
-		if(!message.member.hasPermission("MANAGE_GUILD")) return message.channel.send(`${emojis.wrong}, **أنت لست من ادارة السيرفر لتنفيذ هذا الأمر.**`);
-		if(!message.channel.name.startsWith('rgticket-') && !tchannels.includes(message.channel.id)) return message.channel.send(`${emojis.wrong}, **هذا الروم ليس من رومات التكت.**`);
-		
-		message.channel.send(`${emojis.yes}, **سيتم اغلاق الروم في 3 ثواني من الاَن.**`);
-		tchannels.splice( tchannels.indexOf(message.channel.id), 1 );
-		setTimeout(() => message.channel.delete(), 3000);
-	} else if(args[0].toLowerCase() === `${prefix}restart`) {
-		if(!devs.includes(message.author.id)) return message.channel.send(`${emojis.wrong}, **أنت لست من ادارة السيرفر لأستخدام هذا الأمر.**`);
-		message.channel.send(`${emojis.yes}, **جارى اعادة تشغيل البوت.**`);
-		hero.destroy();
-		hero.login(process.env.ROYALE_TOKEN);
-	} else if(args[0].toLowerCase() === `${prefix}deletetickets`) {
-		let iq = 0;
-		for(let q = 0; q < tchannels.length; q++) {
-			let c = message.guild.channels.get(tchannels[q]);
-			if(c) {
-				c.delete();
-				tchannels.splice( tchannels[q], 1 );
-				iq++;
-			}
-			if(q === tchannels.length - 1 || q === tchannels.lengh + 1) {
-				message.channel.send(`${emojis.yes}, **تم مسح \`${iq}\` من التكتات.**`);
-			}
-		}
-	}
+const Discord = require("discord.js");
+const client = new Discord.Client();
+client.on('message',async message => {
+  if(message.author.bot) return;
+var prefix = "#"
+if(message.content.indexOf(prefix) !== 0) return;
+const args = message.content.slice(prefix.length).trim().split(/ +/g);
+const command = args.shift().toLowerCase();
+if(command === "start") {
+var title = args[0].split('-').join(" ");
+if(args[2]) {
+  message.channel.send(` \`\`\`MD
+  # Title format <word>-<word>-<word>
+  < do not use spaces use - insted
+   \`\`\``);
+}
+var time = args[1].split(":");
+var sec = time[3];
+var min = time[2];
+var hou = time[1];
+var day = time[0];
+ 
+if((hou * 1) > 24) {
+  message.channel.send(` \`\`\`MD
+  # time format <days> : <hours> : <minutes> : <secondes>
+  < hours must be 24 or less
+   \`\`\``);
+}
+else if((sec * 1) > 60) {
+  message.channel.send(` \`\`\`MD
+  # time format <days> : <hours> : <minutes> : <secondes>
+  < minutes must be 60 or less
+  \`\`\``);
+}
+else if((min * 1) > 60) {
+  message.channel.send(` \`\`\`MD
+  # time format <days> : <hours> : <minutes> : <secondes>
+  < seconds must be 60 or less
+  \`\`\``);
+}
+else  {
+ 
+var upgradeTime = sec;
+upgradeTime = upgradeTime * 2 / 2 + (min * 60);
+upgradeTime = upgradeTime * 2 / 2 + (hou * 60 * 60);
+upgradeTime = upgradeTime * 2 / 2 + (day * 24 * 60 * 60);
+var seconds = upgradeTime;
+var duration = (upgradeTime * 1000)
+  if(!message.guild.member(message.author).hasPermission('MANAGE_GUILD')) return message.channel.send(':heavy_multiplication_x:| **s You Dont Have Premission**');
+  if(!args) return message.channel.send(`**Use : #start  <Presentse> <Time>**`);
+  if(!title) return message.channel.send(`**Use : **\`#start ${args[0]} Minutes\`** <Presentse>**`);
+  if(!isNaN(args[1])) return message.channel.send(':heavy_multiplication_x:| **The Time Be Nambers `` Do the Commend Agin``**');
+        let giveEmbed = new Discord.RichEmbed()
+      .setAuthor(message.guild.name, message.guild.iconURL)
+      .setDescription(`**${title}** \nReact Whit 🎁 To Enter! \n**Ends  after   ${day} day  ${hou} hour  ${min} minute ${sec} second**`)
+      .setFooter(message.author.username, message.author.avatarURL);
+      message.channel.send(' :heavy_check_mark: **Giveaway Created** :heavy_check_mark:' , {embed: giveEmbed}).then(m => {
+          message.delete();
+          m.react('🎁');
+              var giveAwayCut = setInterval(function() {
+                  var days        = Math.floor(seconds/24/60/60);
+                  var hoursLeft   = Math.floor((seconds) - (days*86400));
+                  var hours       = Math.floor(hoursLeft/3600);
+                  var minutesLeft = Math.floor((hoursLeft) - (hours*3600));
+                  var minutes     = Math.floor(minutesLeft/60);
+                  var remainingSeconds = seconds % 60;
+                  if (seconds != 0) {
+                    seconds--;
+                  }
+              let updateGiveEmbed = new Discord.RichEmbed()
+              .setAuthor(message.guild.name, message.guild.iconURL)
+              .setDescription(`**${title}** \nReact With 🎁 To Enter! \n**Ends  after   ${days} day  ${hours} hour  ${minutes} minute ${remainingSeconds} second**`)
+              .setFooter(message.author.username, message.author.avatarURL);
+              m.edit(updateGiveEmbed)
+            }, 1000);
+         setTimeout(() => {
+          clearInterval(giveAwayCut)
+           let users = m.reactions.get("🎁").users;
+           let list = users.array().filter(u => u.id !== client.user.id);
+           let gFilter = list[Math.floor(Math.random() * list.length) + 0]
+           let endEmbed = new Discord.RichEmbed()
+           endEmbed.setAuthor(message.author.username, message.author.avatarURL)
+           endEmbed.setTitle(title)
+           endEmbed.addField('Giveaway End !🎁',`Winners : ${gFilter}`)
+         m.edit('** 🎁 GIVEAWAY ENDED 🎁**' , {embed: endEmbed});
+         },duration);
+       });
+  }
+}
 });
-
+ 
+ 
 client.login(process.env.BOT_TOKEN);
